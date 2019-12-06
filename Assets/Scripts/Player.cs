@@ -12,7 +12,7 @@ public class Player : MonoBehaviour
     float speed;
 
     [SerializeField]
-    GameObject laserPrefab;
+    Laser laserPrefab;
     [SerializeField]
     GameObject tripleShotPrefab;
 
@@ -73,30 +73,8 @@ public class Player : MonoBehaviour
 
         transform.Translate(new Vector3(horizontalInput, verticalInput, 0) * Time.deltaTime * speed);
 
-        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -10.9f, 10.9f),
-            Mathf.Clamp(transform.position.y, -5.3f, 7.3f), 0);
-
-        //Vector3 adjustedPosition = transform.position;
-
-        //if (transform.position.y >= 7.5f)
-        //{
-        //    adjustedPosition.y = -5.5f;
-        //}
-        //else if (transform.position.y <= -5.5f)
-        //{
-        //    adjustedPosition.y = 7.5f;
-        //}
-
-        //if (transform.position.x >= 11.3f)
-        //{
-        //    adjustedPosition.x = -11.3f;
-        //}
-        //else if (transform.position.x <= -11.3f)
-        //{
-        //    adjustedPosition.x = 11.3f;
-        //}
-
-        //transform.position = adjustedPosition;
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -10f, 10f),
+            Mathf.Clamp(transform.position.y, -4f, 6f), 0);
     }
 
     void HandleFiring()
@@ -117,6 +95,18 @@ public class Player : MonoBehaviour
             }
         }
     }
+
+	void OnTriggerEnter2D(Collider2D other)
+	{
+		if (other.transform.CompareTag("Laser"))
+		{
+			if (other.GetComponent<Laser> ().IsEnemyLaser) {
+				Destroy (other.gameObject);
+				TakeDamage ();
+			}
+		}
+	}
+
 
     public void TakeDamage()
     {

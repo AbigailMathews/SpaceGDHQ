@@ -7,6 +7,9 @@ public class Laser : MonoBehaviour
 
     [SerializeField]
     float speed = 10f;
+
+	public bool IsEnemyLaser { get; set; }
+
     Renderer _renderer;
 
     // Start is called before the first frame update
@@ -18,7 +21,11 @@ public class Laser : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Translate(Vector3.up * speed * Time.deltaTime);
+		if (IsEnemyLaser) {
+			transform.Translate (Vector3.down * speed * Time.deltaTime);
+		} else {
+			transform.Translate (Vector3.up * speed * Time.deltaTime);
+		}
 
         if (transform.parent != null)
         {
