@@ -58,6 +58,8 @@ public class Player : MonoBehaviour
     UIManager uiManager;
     int score = 0;
 
+    Camera camera;
+
     void Start()
     {
         transform.position = new Vector3(0, -2f, 0);
@@ -70,13 +72,12 @@ public class Player : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
 
         thrusterCharge = 5f;
+
+        camera = Camera.main;
     }
 
     void Update()
     {
-
-        Debug.Log("Shield Strength: " + shieldStrength);
-        Debug.Log("Shield alpha: " + shield.GetComponent<SpriteRenderer>().material.color.a);
         HandleThrusters();
         HandlePlayerMovement();
         HandleFiring();
@@ -125,7 +126,6 @@ public class Player : MonoBehaviour
 
     void HandleThrusters()
     {
-        Debug.Log(thrusterCharge);
         if (Input.GetKey(KeyCode.LeftShift) && thrusterCharge > 0 && !charging)
         {
             thrustersActive = true;
@@ -213,6 +213,8 @@ public class Player : MonoBehaviour
             {
                 damageField[2].SetActive(true);
             }
+
+            StartCoroutine(camera.GetComponent<CameraEffects>().Shake());
         }
 
         else
@@ -222,6 +224,9 @@ public class Player : MonoBehaviour
             {
                 spawner.StopSpawning();
             }
+
+            StartCoroutine(camera.GetComponent<CameraEffects>().Shake());
+
             Instantiate(explosion, transform.position, Quaternion.identity);
             uiManager.ShowGameOver();
             Destroy(gameObject);
