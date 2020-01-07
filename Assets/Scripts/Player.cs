@@ -32,28 +32,30 @@ public class Player : MonoBehaviour
     [SerializeField]
     GameObject explosion;
 
+    // AUDIO
     [SerializeField]
     AudioClip laserSound;
     AudioSource audioSource;
 
+    // THRUSTERS
     [SerializeField]
     GameObject thruster;
     [SerializeField]
-    float thrusterSizeAdjustment = 1.5f;
+    float maxCharge = 5f;
     [SerializeField]
     float chargeRate = 1f;
+    float thrusterCharge = 0f;
+    bool charging = false;
+    bool thrusterEnabled = false;
+    Coroutine thrustersCo;
 
     float fireTimer = -1f;
 
+    // BUFFS
     float tripleShotTimer = -1f;
     float speedBuffTimer = -1f;
-
     bool isTripleShotActive = false;
     int shieldStrength = 0;
-
-    float thrusterCharge = 0f;
-    bool charging = false;
-    bool thrustersActive = false;
 
     UIManager uiManager;
     int score = 0;
@@ -74,6 +76,8 @@ public class Player : MonoBehaviour
         thrusterCharge = 5f;
 
         camera = Camera.main;
+
+        thrustersCo = StartCoroutine(RechargeThrusters(1f));
     }
 
     void Update()
@@ -88,10 +92,10 @@ public class Player : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
-        if (thrustersActive)
+        if (thrusterEnabled)
         {
             transform.Translate(new Vector3(horizontalInput, verticalInput, 0)
-               * Time.deltaTime * speed * speedBuff);
+               * Time.deltaTime * defaultSpeed * speedBuff);
         }
 
         else
@@ -126,34 +130,59 @@ public class Player : MonoBehaviour
 
     void HandleThrusters()
     {
-        if (Input.GetKey(KeyCode.LeftShift) && thrusterCharge > 0 && !charging)
+        // TODO: Stop Coroutine and stop charging if on LeftShift keydown
+
+        if (Input.GetKey(KeyCode.LeftShift) && thrusterCharge > 0)
         {
-            thrustersActive = true;
+            thrusterEnabled = true;
             thrusterCharge -= chargeRate * Time.deltaTime;
+            uiManager.UpdateChargeDisplay(thrusterCharge / maxCharge);
             thruster.SetActive(true);
             return;
-        } else
+        } 
+        else if (Input.GetKeyUp(KeyCode.LeftShift))
         {
-            thruster.SetActive(false);
-        }
-
-        if(thrusterCharge <= 0)
-        {
-            thrusterCharge = 0;
-            StartCoroutine(RechargeThrusters());
+            if (thrusterCharge <= 0)
+            {
+                thrustersCo = StartCoroutine(RechargeThrusters(5f));
+            }
+            else
+            {
+                thrustersCo = StartCoroutine(RechargeThrusters(2f));
+            }
+            return;
         }
 
         if (charging)
         {
-            if (thrusterCharge < 5)
+            if (thrusterCharge < maxCharge)
             {
                 thrusterCharge += chargeRate * Time.deltaTime;
+                uiManager.UpdateChargeDisplay(thrusterCharge / maxCharge);
             }
             else
             {
                 charging = false;
             }
+
+            return;
         }
+        
+
+    }
+
+    void EnableThrusters()
+    {
+        thrusterEnabled = true;
+        thrusterCharge -= chargeRate * Time.deltaTime;
+        uiManager.UpdateChargeDisplay(thrusterCharge / maxCharge);
+        thruster.SetActive(true);
+    }
+
+    void DisableThrusters()
+    {
+        thrusterEnabled = false;
+        thruster.SetActive(false);
     }
 
 	void OnTriggerEnter2D(Collider2D other)
@@ -257,9 +286,10 @@ public class Player : MonoBehaviour
         speed = defaultSpeed;
     }
 
-    IEnumerator RechargeThrusters()
+    IEnumerator RechargeThrusters(float time)
     {
-        yield return new WaitForSeconds(5f);
+        thruster.SetActive(false);
+        yield return new WaitForSeconds(time);
         charging = true;
     }
 

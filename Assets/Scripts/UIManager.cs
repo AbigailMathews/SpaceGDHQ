@@ -14,6 +14,8 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     Image lifeDisplay;
     [SerializeField]
+    GameObject chargeBarDisplay;
+    [SerializeField]
     GameObject gameOverTextContainer;
     [SerializeField]
     GameObject restartTextContainer;
@@ -36,6 +38,13 @@ public class UIManager : MonoBehaviour
     public void UpdateLives(int lives)
     {
         lifeDisplay.sprite = lifeSprites[lives];
+    }
+
+    public void UpdateChargeDisplay(float charge)
+    {
+        var scale = chargeBarDisplay.transform.localScale;
+        scale.x = charge;
+        chargeBarDisplay.transform.localScale = scale;
     }
 
     public void ShowGameOver()
