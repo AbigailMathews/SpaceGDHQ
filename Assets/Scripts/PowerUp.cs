@@ -50,6 +50,15 @@ public class PowerUp : MonoBehaviour
                     case "Shield":
                         player.ActivateShield();
                         break;
+                    case "Ammo":
+                        player.RefillAmmo();
+                        break;
+                    case "Health":
+                        player.Heal();
+                        break;
+                    case "HeatMissles":
+                        player.ActivateHeatMissiles();
+                        break;
                     default:
                         Debug.Log("Unidentified Powerup");
                         break;

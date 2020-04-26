@@ -4,31 +4,35 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    // PLAYER SPEED
     [SerializeField]
     float defaultSpeed = 5f;
     [SerializeField]
     float speedBuff = 2f;
-
     float speed;
+    [SerializeField]
+    float fireRate = .2f;
 
+    // WEAPONS
     [SerializeField]
     Laser laserPrefab;
     [SerializeField]
     GameObject tripleShotPrefab;
+    [SerializeField]
+    GameObject heatMissilesPrefab;
+    [SerializeField]
+    int maxAmmo;
+    int ammoCount;
+    float fireTimer = -1f;
 
+    // HEALTH & DAMAGE
     [SerializeField]
     GameObject shield;
-
     [SerializeField]
-    float fireRate = .2f;
-    [SerializeField]
-    int lives = 3;
-    [SerializeField]
-    GameObject spawnManager;
-
+    int maxLives = 3;
+    int lives;
     [SerializeField]
     GameObject[] damageField;
-
     [SerializeField]
     GameObject explosion;
 
@@ -49,34 +53,39 @@ public class Player : MonoBehaviour
     bool thrusterEnabled = false;
     Coroutine thrustersCo;
 
-    float fireTimer = -1f;
-
     // BUFFS
-    float tripleShotTimer = -1f;
-    float speedBuffTimer = -1f;
     bool isTripleShotActive = false;
     int shieldStrength = 0;
+    bool heatMissilesActive = false;
 
+    // GENERAL
+    [SerializeField]
+    GameObject spawnManager;
     UIManager uiManager;
-    int score = 0;
-
     Camera camera;
+
+    int score = 0;
 
     void Start()
     {
         transform.position = new Vector3(0, -2f, 0);
         speed = defaultSpeed;
+        lives = maxLives;
+        ammoCount = maxAmmo;
+        thrusterCharge = 5f;
+
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
         if (uiManager == null)
         {
             Debug.Log("No UI Manager found!");
+        } else
+        {
+            uiManager.UpdateAmmo(ammoCount);
+            uiManager.UpdateScoreText(score);
         }
+        
         audioSource = GetComponent<AudioSource>();
-
-        thrusterCharge = 5f;
-
         camera = Camera.main;
-
         thrustersCo = StartCoroutine(RechargeThrusters(1f));
     }
 
@@ -92,16 +101,18 @@ public class Player : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
+        Debug.Log("Thruster enabled: "+ thrusterEnabled);
+
         if (thrusterEnabled)
         {
-            transform.Translate(new Vector3(horizontalInput, verticalInput, 0)
-               * Time.deltaTime * defaultSpeed * speedBuff);
+            float translateSpeed = defaultSpeed * speedBuff * Time.deltaTime;
+            transform.Translate(new Vector3(horizontalInput, verticalInput, 0) * translateSpeed);
         }
 
         else
         {
-            transform.Translate(new Vector3(horizontalInput, verticalInput, 0) 
-                * Time.deltaTime * speed);
+            float translateSpeed = defaultSpeed * Time.deltaTime;
+            transform.Translate(new Vector3(horizontalInput, verticalInput, 0) * translateSpeed);
         }
 
 
@@ -111,37 +122,56 @@ public class Player : MonoBehaviour
 
     void HandleFiring()
     {
-        if(Input.GetKeyDown("space") && fireTimer < Time.time)
+        if(Input.GetKeyDown("space") && fireTimer < Time.time && ammoCount > 0)
         {
             fireTimer = Time.time + fireRate;
 
-            if (isTripleShotActive == true)
+            if (heatMissilesActive == true)
+            {
+                Instantiate(heatMissilesPrefab, transform.position + new Vector3(0, 1f, 0), Quaternion.identity);
+                audioSource.PlayOneShot(laserSound, 1f);
+            }
+            else if (isTripleShotActive == true)
             {
                 Instantiate(tripleShotPrefab, transform.position + new Vector3(0, 1.5f, 0), Quaternion.identity);
                 audioSource.PlayOneShot(laserSound, .8f);
-            }
+            } 
             else
             {
                 Instantiate(laserPrefab, transform.position + new Vector3(0, 1f, 0), Quaternion.identity);
                 audioSource.PlayOneShot(laserSound, .4f);
             }
+
+            ammoCount--;
+            uiManager.UpdateAmmo(ammoCount);
         }
     }
 
     void HandleThrusters()
     {
         // TODO: Stop Coroutine and stop charging if on LeftShift keydown
+        if (charging)
+        {
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                charging = false;
+            }
 
-        if (Input.GetKey(KeyCode.LeftShift) && thrusterCharge > 0)
+            if (thrusterCharge < maxCharge)
+            {
+                thrusterCharge += chargeRate * Time.deltaTime;
+                uiManager.UpdateChargeDisplay(thrusterCharge / maxCharge);
+            }
+            else
+            {
+                charging = false;
+            }
+        }
+
+
+        if (Input.GetKeyUp(KeyCode.LeftShift))
         {
-            thrusterEnabled = true;
-            thrusterCharge -= chargeRate * Time.deltaTime;
-            uiManager.UpdateChargeDisplay(thrusterCharge / maxCharge);
-            thruster.SetActive(true);
-            return;
-        } 
-        else if (Input.GetKeyUp(KeyCode.LeftShift))
-        {
+            thrusterEnabled = false;
             if (thrusterCharge <= 0)
             {
                 thrustersCo = StartCoroutine(RechargeThrusters(5f));
@@ -153,36 +183,28 @@ public class Player : MonoBehaviour
             return;
         }
 
-        if (charging)
+        else if (thrusterCharge <= 0)
         {
-            if (thrusterCharge < maxCharge)
-            {
-                thrusterCharge += chargeRate * Time.deltaTime;
-                uiManager.UpdateChargeDisplay(thrusterCharge / maxCharge);
-            }
-            else
-            {
-                charging = false;
-            }
-
+            thrusterEnabled = false;
+            thrustersCo = StartCoroutine(RechargeThrusters(5f));
             return;
         }
+
+        else if (Input.GetKey(KeyCode.LeftShift) && thrusterCharge > 0)
+        {
+            charging = false;
+            thrusterEnabled = true;
+            thrusterCharge -= chargeRate * Time.deltaTime;
+            uiManager.UpdateChargeDisplay(thrusterCharge / maxCharge);
+            thruster.SetActive(true);
+        }
+
+        else
+        {
+            Debug.Log("Final Condition");
+        }
+
         
-
-    }
-
-    void EnableThrusters()
-    {
-        thrusterEnabled = true;
-        thrusterCharge -= chargeRate * Time.deltaTime;
-        uiManager.UpdateChargeDisplay(thrusterCharge / maxCharge);
-        thruster.SetActive(true);
-    }
-
-    void DisableThrusters()
-    {
-        thrusterEnabled = false;
-        thruster.SetActive(false);
     }
 
 	void OnTriggerEnter2D(Collider2D other)
@@ -230,18 +252,8 @@ public class Player : MonoBehaviour
         {
             lives--;
             uiManager.UpdateLives(lives);
-            if (lives == 2)
-            {
-                damageField[Random.Range(0, 2)].SetActive(true);
-            }
-            else if (lives == 1)
-            {
-                damageField[0].SetActive(true);
-                damageField[1].SetActive(true);
-            } else if (lives == 0)
-            {
-                damageField[2].SetActive(true);
-            }
+
+            UpdateDamageVisuals(lives);
 
             StartCoroutine(camera.GetComponent<CameraEffects>().Shake());
         }
@@ -300,6 +312,64 @@ public class Player : MonoBehaviour
         Color shieldColor = shield.GetComponent<SpriteRenderer>().material.color;
         shieldColor.a = 1f;
         shield.GetComponent<SpriteRenderer>().material.color = shieldColor;
+    }
+
+    public void RefillAmmo()
+    {
+        ammoCount = maxAmmo;
+        uiManager.UpdateAmmo(ammoCount);
+    }
+
+    public void Heal()
+    {
+        if (lives < maxLives)
+        {
+            lives += 1;
+        }
+
+        UpdateDamageVisuals(lives);
+        uiManager.UpdateLives(lives);
+    }
+
+    void UpdateDamageVisuals(int currentLives)
+    {
+        switch (currentLives)
+        {
+            case 3:
+                for (int i = 0; i < damageField.Length; i++)
+                {
+                    damageField[i].SetActive(false);
+                }
+                break;
+            case 2:
+                damageField[Random.Range(0, 2)].SetActive(true);
+                break;
+            case 1:
+                damageField[0].SetActive(true);
+                damageField[1].SetActive(true);
+                break;
+            case 0:
+                for (int i = 0; i < damageField.Length; i++)
+                {
+                    damageField[i].SetActive(true);
+                }
+                break;
+            default:
+                Debug.Log("Damage field visual update error -- lives out of expected range");
+                break;
+        }
+    }
+
+    IEnumerator HeatMissles()
+    {
+        heatMissilesActive = true;
+        yield return new WaitForSeconds(5);
+        heatMissilesActive = false;
+    }
+
+    public void ActivateHeatMissiles()
+    {
+        StartCoroutine(HeatMissles());
     }
 
     public void AddToScore(int amount)

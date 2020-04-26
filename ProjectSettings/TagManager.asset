@@ -10,6 +10,9 @@ TagManager:
   - TripleShot
   - Speed
   - Shield
+  - Ammo
+  - Health
+  - HeatMissiles
   layers:
   - Default
   - TransparentFX

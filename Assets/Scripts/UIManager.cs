@@ -16,15 +16,19 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     GameObject chargeBarDisplay;
     [SerializeField]
+    TextMeshProUGUI ammoText;
+    [SerializeField]
+    GameObject ammoTextContainer;
+    [SerializeField]
     GameObject gameOverTextContainer;
     [SerializeField]
     GameObject restartTextContainer;
     GameManager gameManager;
+    Coroutine ammoFlickerCo = null;
 
     // Start is called before the first frame update
     void Start()
     {
-        scoreText.text = "Score: " + 0;
         gameOverTextContainer.SetActive(false);
         restartTextContainer.SetActive(false);
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
@@ -47,6 +51,22 @@ public class UIManager : MonoBehaviour
         chargeBarDisplay.transform.localScale = scale;
     }
 
+    public void UpdateAmmo(int ammo)
+    {
+        ammoText.text = "Ammo: " + ammo;
+        if (ammo <= 0)
+        {
+            ammoFlickerCo = StartCoroutine(Flicker(ammoTextContainer));
+        } else
+        {
+            if (ammoFlickerCo != null)
+            {
+                StopCoroutine(ammoFlickerCo);
+            }
+        }
+
+    }
+
     public void ShowGameOver()
     {
         restartTextContainer.SetActive(true);
@@ -54,16 +74,16 @@ public class UIManager : MonoBehaviour
         {
             gameManager.SetGameOver();
         }
-        StartCoroutine(Flicker());
+        StartCoroutine(Flicker(gameOverTextContainer));
     }
 
-    IEnumerator Flicker()
+    IEnumerator Flicker(GameObject flickerTarget)
     {
         while (true)
         {
-            gameOverTextContainer.SetActive(true);
+            flickerTarget.SetActive(true);
             yield return new WaitForSeconds(Random.Range(0.2f, 0.8f));
-            gameOverTextContainer.SetActive(false);
+            flickerTarget.SetActive(false);
             yield return new WaitForSeconds(Random.Range(0.02f, 0.6f));
         }
 
