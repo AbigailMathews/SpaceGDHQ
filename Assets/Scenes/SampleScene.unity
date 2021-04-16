@@ -2217,7 +2217,7 @@ MonoBehaviour:
     type: 3}
   tripleShotPrefab: {fileID: 7448184935071031507, guid: 89e7ef17f6c44ee40acf29a600b814ca,
     type: 3}
-  heatMissilesPrefab: {fileID: 2395157993936341025, guid: 8542f71a098b16240abe49c98c6db5fc,
+  heatMissilesPrefab: {fileID: 7714050178884925688, guid: 9e7a7403c395bb446883d219a89c56f8,
     type: 3}
   maxAmmo: 15
   shield: {fileID: 2042034896}
@@ -2617,9 +2617,9 @@ MonoBehaviour:
     type: 3}
   enemyContainer: {fileID: 1475043747}
   powerUpPrefabs:
-  - {fileID: 8122175889867557866, guid: a5148996f69c7884d8659ac45a034f75, type: 3}
-  - {fileID: 2870962983265407892, guid: 38318e7cb1d0dbf489d303f80b1e17e2, type: 3}
-  - {fileID: 5516426187252940720, guid: 85359d68fce56b145841f7241ed4170c, type: 3}
+  - {fileID: 7038574667711156041, guid: ecff71c17ea392443ae7f48fecfdafbf, type: 3}
+  - {fileID: 7038574667711156041, guid: ecff71c17ea392443ae7f48fecfdafbf, type: 3}
+  - {fileID: 7038574667711156041, guid: ecff71c17ea392443ae7f48fecfdafbf, type: 3}
   - {fileID: 4896799148920216881, guid: 3e49ca33c71ed6a489f4dc2733eebcf4, type: 3}
   - {fileID: 901886644845766413, guid: 152647a40bb87534eaa1ab36aca8df4c, type: 3}
   - {fileID: 7038574667711156041, guid: ecff71c17ea392443ae7f48fecfdafbf, type: 3}

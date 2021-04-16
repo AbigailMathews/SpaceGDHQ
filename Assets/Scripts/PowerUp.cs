@@ -56,7 +56,7 @@ public class PowerUp : MonoBehaviour
                     case "Health":
                         player.Heal();
                         break;
-                    case "HeatMissles":
+                    case "Heat":
                         player.ActivateHeatMissiles();
                         break;
                     default:

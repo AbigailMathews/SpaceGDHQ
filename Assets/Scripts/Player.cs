@@ -62,7 +62,7 @@ public class Player : MonoBehaviour
     [SerializeField]
     GameObject spawnManager;
     UIManager uiManager;
-    Camera camera;
+    Camera my_camera;
 
     int score = 0;
 
@@ -85,7 +85,7 @@ public class Player : MonoBehaviour
         }
         
         audioSource = GetComponent<AudioSource>();
-        camera = Camera.main;
+        my_camera = Camera.main;
         thrustersCo = StartCoroutine(RechargeThrusters(1f));
     }
 
@@ -101,7 +101,7 @@ public class Player : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
-        Debug.Log("Thruster enabled: "+ thrusterEnabled);
+        //Debug.Log("Thruster enabled: "+ thrusterEnabled);
 
         if (thrusterEnabled)
         {
@@ -129,6 +129,7 @@ public class Player : MonoBehaviour
             if (heatMissilesActive == true)
             {
                 Instantiate(heatMissilesPrefab, transform.position + new Vector3(0, 1f, 0), Quaternion.identity);
+                Debug.Log("Firing from the heat missle prefab");
                 audioSource.PlayOneShot(laserSound, 1f);
             }
             else if (isTripleShotActive == true)
@@ -155,6 +156,7 @@ public class Player : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
                 charging = false;
+                StopCoroutine(thrustersCo);
             }
 
             if (thrusterCharge < maxCharge)
@@ -201,7 +203,8 @@ public class Player : MonoBehaviour
 
         else
         {
-            Debug.Log("Final Condition");
+            //Debug.Log("Final Condition");
+            thrusterEnabled = false;
         }
 
         
@@ -255,7 +258,7 @@ public class Player : MonoBehaviour
 
             UpdateDamageVisuals(lives);
 
-            StartCoroutine(camera.GetComponent<CameraEffects>().Shake());
+            StartCoroutine(my_camera.GetComponent<CameraEffects>().Shake());
         }
 
         else
@@ -266,7 +269,7 @@ public class Player : MonoBehaviour
                 spawner.StopSpawning();
             }
 
-            StartCoroutine(camera.GetComponent<CameraEffects>().Shake());
+            StartCoroutine(my_camera.GetComponent<CameraEffects>().Shake());
 
             Instantiate(explosion, transform.position, Quaternion.identity);
             uiManager.ShowGameOver();

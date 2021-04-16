@@ -15,10 +15,17 @@ public class Enemy : MonoBehaviour
 
     Vector3 position;
 	Animator animator;
-	BoxCollider2D collider;
+	BoxCollider2D my_collider;
 	bool isDestroyed = false;
 	Player player;
     AudioSource audioSource;
+
+    public static readonly HashSet<Enemy> Enemies = new HashSet<Enemy>();
+
+    private void Awake()
+    {
+        Enemies.Add(this);
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +33,7 @@ public class Enemy : MonoBehaviour
         transform.position = SelectSpawnPoint();
         player = GameObject.FindWithTag("Player").gameObject.GetComponent<Player>();
         animator = GetComponent<Animator>();
-        collider = GetComponent<BoxCollider2D>();
+        my_collider = GetComponent<BoxCollider2D>();
         audioSource = GetComponent<AudioSource>();
 
 		StartCoroutine (ShootLaser ());
@@ -54,10 +61,11 @@ public class Enemy : MonoBehaviour
             }
             isDestroyed = true;
             speed = 1f;
-            collider.enabled = false;
+            my_collider.enabled = false;
             animator.SetTrigger("Destroy");
             audioSource.Play();
             Destroy(gameObject, 3f);
+            Enemies.Remove(this);
         }
 
         if (other.transform.CompareTag("Laser") && isDestroyed == false)
@@ -71,11 +79,28 @@ public class Enemy : MonoBehaviour
 				}
 				isDestroyed = true;
 				speed = 1f;
-				collider.enabled = false;
+				my_collider.enabled = false;
 				animator.SetTrigger ("Destroy");
 				audioSource.Play ();
 				Destroy (gameObject, 3f);
-			}
+                Enemies.Remove(this);
+            }
+        }
+
+        if (other.transform.CompareTag("Missile") && isDestroyed == false)
+        {
+            Destroy(other.gameObject);
+            if (player != null)
+            {
+                player.AddToScore(10);
+            }
+            isDestroyed = true;
+            speed = 1f;
+            my_collider.enabled = false;
+            animator.SetTrigger("Destroy");
+            audioSource.Play();
+            Destroy(gameObject, 3f);
+            Enemies.Remove(this);
         }
     }
 

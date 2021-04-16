@@ -12,7 +12,8 @@ TagManager:
   - Shield
   - Ammo
   - Health
-  - HeatMissiles
+  - Heat
+  - Missile
   layers:
   - Default
   - TransparentFX

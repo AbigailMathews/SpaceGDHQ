@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 7038574667711156040}
   m_Layer: 0
   m_Name: Powerup_HEAT
-  m_TagString: HeatMissiles
+  m_TagString: Heat
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
